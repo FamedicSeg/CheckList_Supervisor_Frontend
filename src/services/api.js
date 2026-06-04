@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "/api",
+    baseURL: process.env.REACT_APP_API_URL || "https://mi-api-backend.railway.app/api",
     timeout: 30000,
     headers: {
         "Content-Type":"application/json",
