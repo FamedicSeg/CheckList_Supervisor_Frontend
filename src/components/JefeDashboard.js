@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import jsPDF from 'jspdf';
@@ -55,7 +54,7 @@ function JefeDashboard() {
     try {
       setLoadingStats(true);
       const response = await api.get(
-        `http://localhost:5000/api/jefe/weekly-stats?week=${week}`,
+        `/jefe/weekly-stats?week=${week}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setWeeklyData(response.data);
