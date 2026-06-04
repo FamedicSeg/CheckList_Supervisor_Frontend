@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import logoSafemed from '../assets/logo_safemed.jpg';
@@ -53,7 +54,7 @@ function JefeDashboard() {
   const cargarIndicadoresSemanales = async (week) => {
     try {
       setLoadingStats(true);
-      const response = await axios.get(
+      const response = await api.get(
         `http://localhost:5000/api/jefe/weekly-stats?week=${week}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -75,16 +76,14 @@ function JefeDashboard() {
     try {
       setLoading(true);
       if (view === 'active') {
-        const response = await axios.get(
-          'http://localhost:5000/api/jefe/active-checklists',
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await api.get('/jefe/active-checklists', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setActiveChecklists(response.data);
       } else {
-        const response = await axios.get(
-          'http://localhost:5000/api/jefe/checklists',
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await api.get('/jefe/checklists', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setChecklists(response.data);
       }
     } catch (error) {
@@ -99,10 +98,9 @@ function JefeDashboard() {
 
   const verDetalle = async (id) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/jefe/checklists/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get(`/jefe/checklists/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setSelectedChecklist(response.data);
     } catch (error) {
       console.error('Error cargando detalle:', error);
