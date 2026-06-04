@@ -84,7 +84,7 @@ function Login({ setUser }) {
               {/* ✅ Validación de seguridad antes de map */}
               {Array.isArray(usuarios) && usuarios.map((u) => (
                 <option key={u.id || u.username} value={u.username}>
-                  {u.nombre} ({u.username})
+                  {u.nombre}
                 </option>
               ))}
             </select>
