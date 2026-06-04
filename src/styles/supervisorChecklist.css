@@ -1,9 +1,28 @@
+/* Estilos base para móviles (viewport ancho) */
 .logo-left,
 .logo-right {
   border: #000000 1px solid;
   padding: 4px;
+  box-sizing: border-box; /* Evita que el padding afecte el ancho total */
 }
+
 .logo {
-  width: 200px;
-  height: auto;
+  width: 100%;          /* Ocupa todo el ancho del contenedor */
+  max-width: 200px;     /* No crece más de 200px en tablets */
+  height: auto;         /* Mantiene la proporción */
+  display: block;       /* Evita espacios extra debajo de la imagen */
+  margin-left: auto;    /* Centra horizontalmente si está en bloque */
+  margin-right: auto;
+}
+
+/* Ajuste extra para pantallas muy pequeñas (ej: 320px de ancho) */
+@media (max-width: 480px) {
+  .logo {
+    max-width: 150px;   /* Logo más pequeño en móviles estrechos */
+  }
+  
+  .logo-left,
+  .logo-right {
+    padding: 2px;       /* Menos padding en pantallas muy pequeñas */
+  }
 }
