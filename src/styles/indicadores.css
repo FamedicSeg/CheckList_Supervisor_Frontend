@@ -402,3 +402,46 @@
   color: #888;
   text-align: center;
 }
+
+/* Estilos para el botón de eliminar */
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: scale(1.02);
+}
+
+.delete-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.checklist-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.checklist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}

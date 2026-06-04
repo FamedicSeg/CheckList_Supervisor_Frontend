@@ -67,7 +67,7 @@ function Login({ setUser }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Checklist de Producción</h1>
+        <h1>Checklist - Supervisor de Producción</h1>
         <h2>Iniciar Sesión</h2>
         
         <form onSubmit={handleSubmit}>

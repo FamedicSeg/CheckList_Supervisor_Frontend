@@ -15,6 +15,7 @@ function JefeDashboard() {
   const [loading, setLoading] = useState(true);
   const [weeklyData, setWeeklyData] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [deletingId, setDeletingId] = useState(null); // Para mostrar loading en el botón
   const [selectedWeek, setSelectedWeek] = useState(() => {
     const now = new Date();
     const jan4 = new Date(now.getFullYear(), 0, 4);
@@ -92,6 +93,59 @@ function JefeDashboard() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // =============================================
+  // FUNCIÓN PARA ELIMINAR CHECKLIST
+  // =============================================
+  const eliminarChecklist = async (checklistId, supervisorNombre, event) => {
+    event.stopPropagation(); // Evita que se abra el detalle al hacer clic en eliminar
+    
+    // Confirmación con SweetAlert o confirm nativo
+    const confirmacion = window.confirm(
+      `¿Estás seguro de que deseas eliminar el checklist de ${supervisorNombre}?\n\n` +
+      `Esta acción es IRREVERSIBLE y eliminará:\n` +
+      `• El checklist completo\n` +
+      `• Todas las respuestas asociadas\n\n` +
+      `¿Continuar?`
+    );
+    
+    if (!confirmacion) return;
+    
+    try {
+      setDeletingId(checklistId);
+      
+      const response = await api.delete(`/jefe/checklists/${checklistId}`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.success) {
+        // Mostrar mensaje de éxito
+        alert(`✅ Checklist eliminado correctamente\n\n${response.data.message}`);
+        
+        // Si el checklist eliminado estaba en detalle, cerrar el detalle
+        if (selectedChecklist && selectedChecklist.checklist.id === checklistId) {
+          setSelectedChecklist(null);
+        }
+        
+        // Recargar la lista actual
+        await cargarChecklists();
+      }
+    } catch (error) {
+      console.error('Error eliminando checklist:', error);
+      
+      let mensajeError = 'Error al eliminar el checklist';
+      if (error.response?.data?.error) {
+        mensajeError = error.response.data.error;
+      }
+      
+      alert(`❌ Error: ${mensajeError}`);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -383,26 +437,6 @@ function JefeDashboard() {
                 </div>
               </div>
 
-              {/* ── Barra visual global ── 
-              {(() => {
-                const tot = weeklyData.resumen.total_si + weeklyData.resumen.total_no;
-                const pSi = tot > 0 ? Math.round((weeklyData.resumen.total_si / tot) * 100) : 0;
-                const pNo = tot > 0 ? Math.round((weeklyData.resumen.total_no / tot) * 100) : 0;
-                return tot > 0 ? (
-                  <div className="week-global-bar-wrap">
-                    <div className="week-global-bar">
-                      <div className="ind-bar-si" style={{ width: `${pSi}%` }} title={`Sí: ${pSi}%`} />
-                      <div className="ind-bar-no" style={{ width: `${pNo}%` }} title={`No: ${pNo}%`} />
-                    </div>
-                    <div className="week-global-bar-legend">
-                      <span className="wgbl-si">✔ Sí {pSi}%</span>
-                      <span className="wgbl-no">✘ No {pNo}%</span>
-                    </div>
-                  </div>
-                ) : null;
-              })()}
-                */}
-
               {/* ── Desglose por ítem ── */}
               <div className="ind-desglose-title">Desglose por pregunta</div>
               {weeklyData.secciones.map(seccion => (
@@ -444,25 +478,35 @@ function JefeDashboard() {
             <p className="no-data">No hay turnos registrados</p>
           ) : (
             currentList.map(checklist => (
-              <div key={checklist.id} className="checklist-card" onClick={() => verDetalle(checklist.id)}>
-                <div className="card-header">
+              <div key={checklist.id} className="checklist-card">
+                <div className="card-header" onClick={() => verDetalle(checklist.id)} style={{ cursor: 'pointer' }}>
                   <strong>{checklist.supervisor_nombre}</strong>
                 </div>
-                <div className="card-info">
+                <div className="card-info" onClick={() => verDetalle(checklist.id)} style={{ cursor: 'pointer' }}>
                   <span>Turno {checklist.numero_turno}</span>
                   <span>Inicio: {new Date(checklist.iniciado_en).toLocaleString('es-ES', {timeZone: 'America/Guayaquil'})}</span>
                 </div>
-                <div className="progress-bar">
+                <div className="progress-bar" onClick={() => verDetalle(checklist.id)} style={{ cursor: 'pointer' }}>
                   <div className="progress-fill" style={{ width: `${checklist.progreso}%`, backgroundColor: getProgressColor(checklist.progreso) }} />
                   <span className="progress-text">{checklist.progreso}%</span>
                 </div>
-                <div className="items-count">
+                <div className="items-count" onClick={() => verDetalle(checklist.id)} style={{ cursor: 'pointer' }}>
                   {checklist.items_respondidos} / {checklist.total_items} ítems respondidos
                 </div>
-                {checklist.status === 'completado' && <div className="completed-badge">✅ Completado</div>}
-                {checklist.ultima_actividad && checklist.status === 'en_progreso' && (
-                  <div className="last-activity">Última actividad: {formatFecha(checklist.ultima_actividad)}</div>
-                )}
+                <div className="card-actions">
+                  {checklist.status === 'completado' && <div className="completed-badge">✅ Completado</div>}
+                  {checklist.ultima_actividad && checklist.status === 'en_progreso' && (
+                    <div className="last-activity">Última actividad: {formatFecha(checklist.ultima_actividad)}</div>
+                  )}
+                  <button
+                    onClick={(e) => eliminarChecklist(checklist.id, checklist.supervisor_nombre, e)}
+                    className="delete-btn"
+                    disabled={deletingId === checklist.id}
+                    title="Eliminar checklist"
+                  >
+                    {deletingId === checklist.id ? '⌛ Eliminando...' : '🗑️ Eliminar'}
+                  </button>
+                </div>
               </div>
             ))
           )}
