@@ -195,14 +195,7 @@ function SupervisorChecklist() {
   return (
     <div className="supervisor-container">
       <header>
-        <div className ="logo-left">
-            <img src={logo_safemed} alt="logo" className="logo" />
-        </div>  
-          <h1>CHECKLIST - SUPERVISOR DE PRODUCCIÓN</h1>
-          
-        <div >
-            <img src={logo2} alt="logo" className="logo logo-right" />
-        </div>
+          <h1 style={{ textAlign: 'center', fontSize: '24px' }}>CHECKLIST - SUPERVISOR DE PRODUCCIÓN</h1>
       </header>
       <header>
       <div className="header-meta">
