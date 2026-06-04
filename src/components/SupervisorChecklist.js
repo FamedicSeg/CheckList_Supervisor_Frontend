@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 import logo_safemed from '../assets/logo_safemed.jpg';
 import logo2 from '../assets/logo2.png';
@@ -23,30 +23,27 @@ function SupervisorChecklist() {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  useEffect(() => {
-    cargarChecklist();
-    cargarHistorial();
-  }, []);
+  
 
-  const cargarChecklist = async () => {
+  const cargarChecklist = useCallback(async () => {
     try {
-      const response = await axios.get(
-        'http://localhost:5000/api/supervisor/active-checklist',
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setChecklist(response.data);
-      setRespuestas(response.data.respuestas || {});
-      setObservacionesGenerales(response.data.observaciones_generales || '');
-      setChecklistStatus(response.data.status || 'en_progreso');
-      setLoading(false);
+        const response = await axios.get(
+            `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/supervisor/active-checklist`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setChecklist(response.data);
+        setRespuestas(response.data.respuestas || {});
+        setObservacionesGenerales(response.data.observaciones_generales || '');
+        setChecklistStatus(response.data.status || 'en_progreso');
+        setLoading(false);
     } catch (error) {
-      console.error('Error cargando checklist:', error);
-      if (error.response?.status === 403) {
-        navigate('/login');
-      }
-      setLoading(false);
+        console.error('Error cargando checklist:', error);
+        if (error.response?.status === 403) {
+            navigate('/login');
+        }
+        setLoading(false);
     }
-  };
+}, [token, navigate]);
 
   const guardarProceso = async () => {
     if (!checklist) return;
@@ -54,7 +51,7 @@ function SupervisorChecklist() {
     setMensajeGuardado('');
     try {
       await axios.post(
-        'http://localhost:5000/api/supervisor/save-progress',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/supervisor/save-progress`,
         {
           checklist_id: checklist.checklist_id,
           observaciones_generales: observacionesGenerales
@@ -77,7 +74,7 @@ function SupervisorChecklist() {
     
     try {
       await axios.post(
-        'http://localhost:5000/api/supervisor/response',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/supervisor/response`,
         {
           checklist_id: checklist.checklist_id,
           item_id: itemId,
@@ -121,7 +118,7 @@ function SupervisorChecklist() {
     setFinalizando(true);
     try {
       await axios.post(
-        'http://localhost:5000/api/supervisor/finalize-checklist',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/supervisor/finalize-checklist`,
         {
           checklist_id: checklist.checklist_id,
           observaciones_generales: observacionesGenerales
@@ -144,24 +141,24 @@ function SupervisorChecklist() {
     navigate('/login');
   };
 
-  const cargarHistorial = async () => {
+  const cargarHistorial = useCallback(async () => {
     try {
-      const response = await axios.get(
-        'http://localhost:5000/api/supervisor/history',
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setHistorial(response.data);
+        const response = await axios.get(
+            `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/supervisor/history`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setHistorial(response.data);
     } catch (error) {
-      console.error('Error cargando historial:', error);
+        console.error('Error cargando historial:', error);
     }
-  };
+}, [token]); // ← Dependencia
 
   const verDetalleHistorial = async (id) => {
     setLoadingDetalle(true);
     setDetalleHistorial(null);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/supervisor/checklist/${id}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/supervisor/checklist/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setDetalleHistorial(response.data);
@@ -171,6 +168,11 @@ function SupervisorChecklist() {
       setLoadingDetalle(false);
     }
   };
+
+  useEffect(() => {
+    cargarChecklist();
+    cargarHistorial();
+  }, [cargarChecklist, cargarHistorial]);
 
   if (loading) return <div className="loading">Cargando checklist...</div>;
   if (!checklist) return <div className="error">Error al cargar el checklist</div>;
