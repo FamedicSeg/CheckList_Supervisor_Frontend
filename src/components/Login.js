@@ -1,34 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {api} from '../services/api';
+import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
 function Login({ setUser }) {
   const [usuarios, setUsuarios] = useState([]);
-  const [cargando, setCargando] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const navigate = useNavigate();  // ← Agrega esto
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cargarUsuarios = async () => {
-        setCargando(true);
-        try{
-            const {data} = await api.get("/usuarios");
-            setUsuarios(data);
-        } catch (error){
-            console.error("Error al cargar usuarios:", error);
-            alert("Error al cargar usuarios. Por favor, intenta de nuevo.");
-        } finally {
-            setCargando(false);
-    }
-  }
-  cargarUsuarios();
-    }, []);
+      try {
+        const { data } = await api.get("/usuarios");
+        // ✅ Asegura que data sea un array
+        setUsuarios(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+        setUsuarios([]); // ← En caso de error, array vacío
+        setError("Error al cargar usuarios. Por favor, intenta de nuevo.");
+      }
+    };
+    
+    cargarUsuarios();
+  }, []); // ← Dependencias vacías
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +35,8 @@ function Login({ setUser }) {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      // ✅ Usa api en lugar de axios directo para mantener consistencia
+      const response = await api.post('/auth/login', {
         username,
         password
       });
@@ -45,8 +45,12 @@ function Login({ setUser }) {
     
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
       
+      if (setUser) {
+        setUser(user);
+      }
+      
+      // Redirigir según el rol
       if (user.role === 'SUPERVISOR') {
         navigate('/');
       } else if (user.role === 'ADMINISTRADOR') {
@@ -68,22 +72,22 @@ function Login({ setUser }) {
         <h2>Iniciar Sesión</h2>
         
         <form onSubmit={handleSubmit}>
-          <label>Usuario</label>
-          <div className="input-group">
+          <div className="form-group">
+            <label>Usuario</label>
             <select
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              disabled={cargando}
             >
-                <option value="">
-                    {cargando ? 'Cargando usuarios...' : 'Seleccione un usuario'}
+              <option value="">
+                Seleccione un usuario
+              </option>
+              {/* ✅ Validación de seguridad antes de map */}
+              {Array.isArray(usuarios) && usuarios.map((u) => (
+                <option key={u.id || u.username} value={u.username}>
+                  {u.nombre} ({u.username})
                 </option>
-                {usuarios.map((u) => (
-                    <option key={u.username} value={u.username}>
-                        {u.nombre}
-                    </option>
-                ))}
+              ))}
             </select>
           </div>
           
