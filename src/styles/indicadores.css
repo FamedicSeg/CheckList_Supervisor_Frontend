@@ -1,0 +1,404 @@
+/* =========================================================
+   Indicadores Semanales — JefeDashboard
+   ========================================================= */
+
+.indicadores-panel {
+  background: white;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+/* ---- Cabecera con selector ---- */
+.indicadores-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #667eea;
+}
+
+.indicadores-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.2rem;
+}
+
+.indicadores-subtitle {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.week-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.week-selector-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.week-input {
+  border: 1px solid #c0c8e0;
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.875rem;
+  color: #222;
+  cursor: pointer;
+  outline: none;
+  background: #f7f9ff;
+}
+
+.week-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.18);
+}
+
+.week-range-label {
+  font-size: 0.78rem;
+  color: #667eea;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---- Tarjetas de resumen ---- */
+.week-summary-cards {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+
+.week-card {
+  flex: 1;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 0.5rem;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+  gap: 0.2rem;
+}
+
+.week-card-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.week-card-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.week-card-turnos    { background: #eef2ff; }
+.week-card-turnos .week-card-value  { color: #3730a3; }
+.week-card-turnos .week-card-label  { color: #6366f1; }
+
+.week-card-completados { background: #f0fdf4; }
+.week-card-completados .week-card-value { color: #15803d; }
+.week-card-completados .week-card-label { color: #22c55e; }
+
+.week-card-si   { background: #d4edda; }
+.week-card-si   .week-card-value { color: #155724; }
+.week-card-si   .week-card-label { color: #28a745; }
+
+.week-card-no   { background: #f8d7da; }
+.week-card-no   .week-card-value { color: #721c24; }
+.week-card-no   .week-card-label { color: #dc3545; }
+
+.week-card-pendientes { background: #fff3cd; }
+.week-card-pendientes .week-card-value { color: #856404; }
+.week-card-pendientes .week-card-label { color: #e67e00; }
+
+/* ---- Barra global Sí/No ---- */
+.week-global-bar-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.week-global-bar {
+  display: flex;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #e9ecef;
+  margin-bottom: 0.35rem;
+}
+
+.week-global-bar-legend {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.wgbl-si { color: #155724; }
+.wgbl-no { color: #721c24; }
+
+/* ---- Título desglose ---- */
+.ind-desglose-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #667eea;
+  margin-bottom: 0.6rem;
+}
+
+/* ---- Sección ---- */
+.ind-seccion {
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.ind-seccion-titulo {
+  background-color: #1b4480;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 0.6rem 1rem;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Fila de ítem ---- */
+.ind-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid #eef1f8;
+  background: white;
+  transition: background 0.15s;
+}
+
+.ind-item:last-child { border-bottom: none; }
+.ind-item:nth-child(even) { background: #f7faff; }
+.ind-item:hover { background: #eef4ff; }
+
+.ind-subitem { background: #fafbff !important; padding-left: 1.75rem; }
+.ind-subitem:nth-child(even) { background: #f3f5ff !important; }
+
+/* ---- Descripción ---- */
+.ind-desc {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #222;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.ind-subitem .ind-desc { color: #444; font-size: 0.845rem; }
+
+/* ---- Bloque de estadísticas ---- */
+.ind-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  min-width: 280px;
+}
+
+/* ---- Contadores ---- */
+.ind-count {
+  display: inline-block;
+  min-width: 52px;
+  text-align: center;
+  padding: 0.22rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ind-count-si { background: #d4edda; color: #155724; }
+.ind-count-no { background: #f8d7da; color: #721c24; }
+
+/* ---- Barra dual ---- */
+.ind-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 120px;
+}
+
+.ind-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: #e9ecef;
+}
+
+.ind-bar-si { background: #28a745; transition: width 0.4s ease; }
+.ind-bar-no { background: #dc3545; transition: width 0.4s ease; }
+
+.ind-total-label { font-size: 0.7rem; color: #888; text-align: center; }
+
+
+.indicadores-panel {
+  background: white;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.indicadores-header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #667eea;
+}
+
+.indicadores-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.2rem;
+}
+
+.indicadores-subtitle {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+/* ---- Sección ---- */
+.ind-seccion {
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.ind-seccion-titulo {
+  background-color: #1b4480;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 0.6rem 1rem;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Fila de ítem ---- */
+.ind-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid #eef1f8;
+  background: white;
+  transition: background 0.15s;
+}
+
+.ind-item:last-child {
+  border-bottom: none;
+}
+
+.ind-item:nth-child(even) {
+  background: #f7faff;
+}
+
+.ind-item:hover {
+  background: #eef4ff;
+}
+
+.ind-subitem {
+  background: #fafbff !important;
+  padding-left: 1.75rem;
+}
+
+.ind-subitem:nth-child(even) {
+  background: #f3f5ff !important;
+}
+
+/* ---- Descripción ---- */
+.ind-desc {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #222;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.ind-subitem .ind-desc {
+  color: #444;
+  font-size: 0.845rem;
+}
+
+/* ---- Bloque de estadísticas ---- */
+.ind-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  min-width: 280px;
+}
+
+/* ---- Contadores (badges) ---- */
+.ind-count {
+  display: inline-block;
+  min-width: 52px;
+  text-align: center;
+  padding: 0.22rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ind-count-si {
+  background: #d4edda;
+  color: #155724;
+}
+
+.ind-count-no {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ---- Barra de progreso dual ---- */
+.ind-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 120px;
+}
+
+.ind-bar {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: #e9ecef;
+}
+
+.ind-bar-si {
+  background: #28a745;
+  transition: width 0.4s ease;
+}
+
+.ind-bar-no {
+  background: #dc3545;
+  transition: width 0.4s ease;
+}
+
+.ind-total-label {
+  font-size: 0.7rem;
+  color: #888;
+  text-align: center;
+}

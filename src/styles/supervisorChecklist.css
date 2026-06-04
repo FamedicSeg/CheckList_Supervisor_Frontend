@@ -1,0 +1,9 @@
+.logo-left,
+.logo-right {
+  border: #000000 1px solid;
+  padding: 4px;
+}
+.logo {
+  width: 200px;
+  height: auto;
+}

@@ -1,0 +1,419 @@
+/* AdminUsuarios.css - Versión mejorada */
+
+/* Contenedor principal */
+.admin-container {
+  background: #f5f7fb;
+  padding: 25px;
+  min-height: 100vh;
+}
+
+/* Tarjeta principal */
+.admin-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Header */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.admin-btn-add {
+  background: #1e40af;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.admin-btn-add:hover {
+  opacity: 0.9;
+}
+
+.admin-btn-btn-primary {
+  background: #1eaf3d;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: rgb(176, 32, 32) !important;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.admin-btn-add:hover {
+  opacity: 0.9;
+}
+
+/* Tabla */
+.admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+.admin-table thead {
+  background: #f9fafb;
+}
+
+.admin-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6b7280;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.admin-table tr:hover {
+  background: #f3f4f6;
+}
+
+/* Badges de estado */
+.admin-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.admin-status.activo {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-status.inactivo {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Badges de rol */
+.admin-rol-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.admin-rol-badge.rol-líder {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.admin-rol-badge.rol-supervisor {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.admin-rol-badge.rol-analista-de-producción {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+/* Celda de contraseña */
+.admin-password-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-password-text {
+  font-family: monospace;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.admin-password-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.admin-password-hidden {
+  color: #9ca3af;
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+/* Botones de acción */
+.admin-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-btn-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.admin-btn-icon.view-password:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.admin-btn-icon.change-password:hover {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.admin-btn-icon.edit:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.admin-btn-icon.toggle:hover {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.admin-btn-icon.delete:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Formulario de usuario */
+.admin-form-container {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 1px solid #e5e7eb;
+}
+
+.admin-form-container h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #111827;
+}
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.admin-form-group input,
+.admin-form-group select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  text-transform: none;
+}
+
+.admin-form-group input:focus,
+.admin-form-group select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.admin-form-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-form-group.checkbox input {
+  width: auto;
+}
+
+.admin-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.admin-form-actions .btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.admin-form-actions .btn-success {
+  background: #16a34a;
+  color: white;
+}
+
+.admin-form-actions .btn-success:hover {
+  background: #15803d;
+}
+
+.admin-form-actions .btn-secondary {
+  background: #ebe5e5;
+  color: #374151;
+}
+
+.admin-form-actions .btn-secondary:hover {
+  background: #d1d5db;
+}
+
+/* Modal de contraseña */
+.admin-password-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.admin-password-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-password-modal h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.admin-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-password-form .admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-password-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-password-form input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  text-transform: none;
+}
+
+.admin-password-form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.admin-password-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.admin-password-modal-actions .admin-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.admin-password-modal-actions .btn-success {
+  background: #16a34a;
+  color: white;
+}
+
+.admin-password-modal-actions .btn-success:hover {
+  background: #15803d;
+}
+
+.admin-password-modal-actions .btn-success:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-password-modal-actions .btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.admin-password-modal-actions .btn-secondary:hover {
+  background: #d1d5db;
+}

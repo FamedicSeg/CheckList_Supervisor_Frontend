@@ -1,0 +1,42 @@
+/* ============================================
+   FOOTER STYLES
+   ============================================ */
+
+.app-footer {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  margin-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-content p {
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.footer-content strong {
+  font-weight: 600;
+  display: inline-block;
+  margin: 0 4px;
+}
+
+/* ============================================
+   RESPONSIVE FOOTER
+   ============================================ */
+
+@media (max-width: 768px) {
+  .app-footer {
+    padding: 16px;
+    font-size: 12px;
+  }
+}
