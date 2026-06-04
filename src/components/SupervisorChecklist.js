@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback} from 'react';
 import { api } from '../services/api';
-import logo_safemed from '../assets/logo_safemed.jpg';
-import logo2 from '../assets/logo2.png';
 import "../styles/supervisorChecklist.css";
 import { useNavigate } from 'react-router-dom';
 
