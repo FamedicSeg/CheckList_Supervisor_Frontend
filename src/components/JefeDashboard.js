@@ -191,7 +191,8 @@ function JefeDashboard() {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
     const pageW = doc.internal.pageSize.getWidth();
-    let y = 15;
+    const pageH = doc.internal.pageSize.getHeight();
+    let y = 10; // Reducido el margen superior inicial
 
     // ── Cargar imágenes ──
     const [imgLeft, imgRight] = await Promise.all([
@@ -199,58 +200,59 @@ function JefeDashboard() {
       getBase64FromUrl(logo2)
     ]);
 
-    // ── Encabezado ──
-    const headerH = 30;
+    // ── Encabezado más compacto ──
+    const headerH = 22; // Reducido de 30 a 22
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageW, headerH, 'F');
 
-    // Logos
-    const logoW = 35;
-    const logoH = 17;
+    // Logos más pequeños
+    const logoW = 28; // Reducido de 35 a 30
+    const logoH = 16; // Reducido de 17 a 14
     const logoY = (headerH - logoH) / 2;
     if (imgLeft)  doc.addImage(imgLeft,  'JPEG', 5, logoY, logoW, logoH);
     if (imgRight) doc.addImage(imgRight, 'JPEG', pageW - logoW - 5, logoY, logoW, logoH);
 
-    // Texto centrado
+    // Texto centrado más compacto
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
+    doc.setFontSize(10); // Reducido de 12 a 10
     doc.setFont('helvetica', 'bold');
-    doc.text('CHECKLIST - SUPERVISOR DE PRODUCCIÓN', pageW / 2, 13, { align: 'center' });
-    doc.setFontSize(8);
+    doc.text('CHECKLIST - SUPERVISOR DE PRODUCCIÓN', pageW / 2, 9, { align: 'center' });
+    doc.setFontSize(7); // Reducido de 8 a 7
     doc.setFont('helvetica', 'normal');
-    doc.text('Sistema de Registros Digitales', pageW / 2, 21, { align: 'center' });
+    doc.text('Sistema de Registros Digitales', pageW / 2, 15, { align: 'center' });
 
-    y = headerH + 7;
+    y = headerH + 5; // Reducido el espacio después del encabezado
 
-    // ── Info del turno ──
+    // ── Info del turno (más compacta) ──
     doc.setTextColor(40, 40, 40);
-    doc.setFontSize(9);
+    doc.setFontSize(8); // Reducido de 9 a 8
     const fechaInicio = cl.iniciado_en
       ? new Date(cl.iniciado_en).toLocaleString('es-ES', { timeZone: 'America/Guayaquil', day: '2-digit', month: '2-digit', year: 'numeric' })
       : cl.fecha;
+    
     doc.setFont('helvetica', 'bold');
     doc.text('Supervisor:', 14, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(cl.supervisor_nombre || '—', 40, y);
+    doc.text(cl.supervisor_nombre || '—', 38, y);
     doc.setFont('helvetica', 'bold');
     doc.text('Fecha:', pageW / 2, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(fechaInicio, pageW / 2 + 14, y);
-    y += 6;
+    doc.text(fechaInicio, pageW / 2 + 12, y);
+    y += 5; // Reducido de 6 a 5
     doc.setFont('helvetica', 'bold');
     doc.text('Turno Nº:', 14, y);
     doc.setFont('helvetica', 'normal');
-    doc.text(String(cl.numero_turno || 1), 40, y);
+    doc.text(String(cl.numero_turno || 1), 38, y);
     
-    y += 8;
+    y += 6; // Reducido de 8 a 6
 
-    // Línea separadora
+    // Línea separadora más delgada
     doc.setDrawColor(91, 155, 213);
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(0.3);
     doc.line(14, y, pageW - 14, y);
-    y += 5;
+    y += 4; // Reducido de 5 a 4
 
-    // ── Secciones ──
+    // ── Secciones con autoTable más compacto ──
     selectedChecklist.secciones.forEach(seccion => {
       const parentItems = seccion.items.filter(i => !i.parent_item_id);
       const parentIndex = {};
@@ -272,22 +274,22 @@ function JefeDashboard() {
       autoTable(doc, {
         startY: y,
         head: [
-          [{ content: seccion.titulo.toUpperCase(), colSpan: 4, styles: { fillColor: [27, 68, 128], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 9 } }],
+          [{ content: seccion.titulo.toUpperCase(), colSpan: 4, styles: { fillColor: [27, 68, 128], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 8 } }],
           [
-            { content: '#', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 8 } },
-            { content: 'Actividad', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 8 } },
-            { content: 'Verificación', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', halign: 'center', fontSize: 8 } },
-            { content: 'Observaciones / Acciones Correctivas', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 8 } },
+            { content: '#', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 7 } },
+            { content: 'Actividad', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 7 } },
+            { content: 'Verif.', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', halign: 'center', fontSize: 7 } },
+            { content: 'Observaciones / Acciones Correctivas', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 7 } },
           ]
         ],
         body: rows,
         columnStyles: {
-          0: { cellWidth: 10, halign: 'center', fontSize: 7 },
-          1: { cellWidth: 85, fontSize: 7 },
-          2: { cellWidth: 24, halign: 'center', fontSize: 7 },
-          3: { fontSize: 7 },
+          0: { cellWidth: 8, halign: 'center', fontSize: 6 }, // Reducido de 10 a 8
+          1: { cellWidth: 80, fontSize: 6 }, // Reducido de 85 a 80
+          2: { cellWidth: 18, halign: 'center', fontSize: 6 }, // Reducido de 24 a 18
+          3: { fontSize: 6 }, // Reducido de 7 a 6
         },
-        styles: { overflow: 'linebreak', cellPadding: 2 },
+        styles: { overflow: 'linebreak', cellPadding: 1.5 }, // Reducido padding de 2 a 1.5
         alternateRowStyles: { fillColor: [245, 250, 255] },
         didParseCell: (data) => {
           if (data.section === 'body') {
@@ -300,24 +302,30 @@ function JefeDashboard() {
         margin: { left: 14, right: 14 },
       });
 
-      y = doc.lastAutoTable.finalY + 5;
+      y = doc.lastAutoTable.finalY + 3; // Reducido de 5 a 3
     });
 
-    // ── Observaciones generales ──
+    // ── Observaciones generales (más compactas) ──
     if (cl.observaciones_generales) {
+      // Verificar espacio suficiente
+      if (y > pageH - 35) {
+        doc.addPage();
+        y = 20;
+      }
+      
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setTextColor(40, 40, 40);
       doc.text('Observaciones Generales:', 14, y);
-      y += 5;
+      y += 4;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       const lines = doc.splitTextToSize(cl.observaciones_generales, pageW - 28);
       doc.text(lines, 14, y);
-      y += lines.length * 4 + 4;
+      y += lines.length * 3.5 + 3; // Reducido el espaciado
     }
 
-    // ── Firma / Realizado por ──
+    // ── Firma / Realizado por (más compacto) ──
     const fechaFin = cl.completado_en
       ? new Date(cl.completado_en).toLocaleString('es-ES', {
           timeZone: 'America/Guayaquil',
@@ -326,31 +334,34 @@ function JefeDashboard() {
         })
       : '—';
 
-    // Verificar espacio en página
-    if (y > 260) { doc.addPage(); y = 20; }
+    // Verificar espacio antes de la firma
+    if (y > pageH - 30) {
+      doc.addPage();
+      y = 20;
+    }
 
-    y += 4;
+    y += 3;
     doc.setDrawColor(91, 155, 213);
     doc.line(14, y, pageW - 14, y);
-    y += 7;
+    y += 5;
 
     doc.setFillColor(240, 244, 255);
-    doc.roundedRect(14, y - 3, pageW - 28, 20, 2, 2, 'F');
+    doc.roundedRect(14, y - 2, pageW - 28, 16, 2, 2, 'F'); // Reducido de 20 a 16 de alto
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(27, 68, 128);
-    doc.text('Realizado por:', 20, y + 5);
+    doc.text('Realizado por:', 20, y + 4);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(40, 40, 40);
-    doc.text(cl.supervisor_nombre || '—', 50, y + 5);
+    doc.text(cl.supervisor_nombre || '—', 50, y + 4);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 68, 128);
-    doc.text('Fecha y hora de finalización:', 20, y + 12);
+    doc.text('Finalización:', 20, y + 10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(40, 40, 40);
-    doc.text(fechaFin, 75, y + 12);
+    doc.text(fechaFin, 50, y + 10);
 
-    doc.save(`checklist_${cl.supervisor_nombre}_${cl.fecha}.pdf`);
+    doc.save(`CheckList_RG-GPR-38_${cl.supervisor_nombre}_${cl.fecha}.pdf`);
   };
 
   const formatFecha = (fecha) => {

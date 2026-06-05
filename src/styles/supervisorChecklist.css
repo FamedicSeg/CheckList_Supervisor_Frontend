@@ -26,3 +26,18 @@
     padding: 2px;       /* Menos padding en pantallas muy pequeñas */
   }
 }
+.supervisor-container {
+    
+    /* Fondo (ajústalo a tu gusto) */
+    background: linear-gradient(135deg, #195387 0%, #154e9e 100%);
+    
+    /* Colores de texto base */
+    color: #000000;
+   }
+
+/* Para evitar el zoom en inputs (muy útil en Android) */
+.supervisor-container input,
+.supervisor-container select,
+.supervisor-container textarea {
+    font-size: 16px; /* Previene zoom automático en Android */
+}
