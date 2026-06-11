@@ -198,7 +198,7 @@ function SupervisorChecklist() {
       <header>
       <div className="header-meta">
             <span>Supervisor: <strong>{user?.nombre}</strong></span><br></br>
-            <span>Fecha: <strong>{new Date().toLocaleDateString()}</strong></span><br></br>
+            <span>Fecha: <strong>{checklist?.fecha || new Date().toLocaleDateString()}</strong></span><br></br>
             <span>
               Turno:
               <select className="turno-select">
