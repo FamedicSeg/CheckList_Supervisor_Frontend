@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import logo_safemed from '../assets/logo_safemed.jpg';
 import logo2 from '../assets/logo2.png';
@@ -26,7 +26,7 @@ function SupervisorChecklist() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  const cargarChecklist = async () => {
+  const cargarChecklist = useCallback(async () => {
     try {
       const response = await axios.get(
         `${API_URL}/supervisor/active-checklist`,
@@ -44,9 +44,9 @@ function SupervisorChecklist() {
       }
       setLoading(false);
     }
-  };
+  }, [token, API_URL, navigate]);
 
-  const cargarHistorial = async () => {
+  const cargarHistorial = useCallback(async () => {
     try {
       const response = await axios.get(
         `${API_URL}/supervisor/history`,
@@ -56,12 +56,12 @@ function SupervisorChecklist() {
     } catch (error) {
       console.error('Error cargando historial:', error);
     }
-  };
+  }, [token, API_URL]);
 
   useEffect(() => {
     cargarChecklist();
     cargarHistorial();
-  }, []);
+  }, [cargarChecklist, cargarHistorial]);
 
   const guardarProceso = async () => {
     if (!checklist) return;
