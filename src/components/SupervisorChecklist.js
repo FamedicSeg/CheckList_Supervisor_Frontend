@@ -24,6 +24,7 @@ function SupervisorChecklist() {
 
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     cargarChecklist();
@@ -33,7 +34,7 @@ function SupervisorChecklist() {
   const cargarChecklist = async () => {
     try {
       const response = await axios.get(
-        'http://localhost:5000/api/supervisor/active-checklist',
+        `${API_URL}/supervisor/active-checklist`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setChecklist(response.data);
@@ -56,7 +57,7 @@ function SupervisorChecklist() {
     setMensajeGuardado('');
     try {
       await axios.post(
-        'http://localhost:5000/api/supervisor/save-progress',
+        `${API_URL}/supervisor/save-progress`,
         {
           checklist_id: checklist.checklist_id,
           observaciones_generales: observacionesGenerales
@@ -79,7 +80,7 @@ function SupervisorChecklist() {
     
     try {
       await axios.post(
-        'http://localhost:5000/api/supervisor/response',
+        `${API_URL}/supervisor/response`,
         {
           checklist_id: checklist.checklist_id,
           item_id: itemId,
@@ -127,9 +128,22 @@ function SupervisorChecklist() {
     
     setFinalizando(true);
     try {
-      const endpoint = modoEdicion 
-        ? 'http://localhost:5000/api/supervisor/finalize-edit'
-        : 'http://localhost:5000/api/supervisor/finalize-checklist';
+      // Determinar el endpoint basado en el estado actual
+      let endpoint;
+      if (checklistStatus === 'en_progreso') {
+        // Si está en progreso, siempre usa finalize-checklist
+        endpoint = `${API_URL}/supervisor/finalize-checklist`;
+      } else if (checklistStatus === 'en_edicion') {
+        // Si está en edición, usa finalize-edit
+        endpoint = `${API_URL}/supervisor/finalize-edit`;
+      } else {
+        // Fallback (no debería llegar aquí normalmente)
+        endpoint = `${API_URL}/supervisor/finalize-checklist`;
+      }
+      
+      console.log('Finalizando con endpoint:', endpoint);
+      console.log('Status actual:', checklistStatus);
+      console.log('Checklist ID:', checklist.checklist_id);
       
       await axios.post(
         endpoint,
@@ -140,13 +154,15 @@ function SupervisorChecklist() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      const msg = modoEdicion ? '✅ Edición finalizada' : '✅ Checklist finalizado correctamente';
+      const msg = checklistStatus === 'en_progreso' ? '✅ Checklist finalizado correctamente' : '✅ Edición finalizada';
       alert(msg);
       setModoEdicion(false);
       navigate('/');
     } catch (error) {
       console.error('Error finalizando:', error);
-      alert('❌ Error al finalizar el checklist');
+      console.error('Respuesta del servidor:', error.response?.data);
+      const mensajeError = error.response?.data?.error || 'Error al finalizar el checklist';
+      alert(`❌ ${mensajeError}`);
     } finally {
       setFinalizando(false);
     }
@@ -161,7 +177,7 @@ function SupervisorChecklist() {
   const cargarHistorial = async () => {
     try {
       const response = await axios.get(
-        'http://localhost:5000/api/supervisor/history',
+        `${API_URL}/supervisor/history`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setHistorial(response.data);
@@ -175,9 +191,11 @@ function SupervisorChecklist() {
     setDetalleHistorial(null);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/supervisor/checklist/${id}`,
+        `${API_URL}/supervisor/checklist/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log('Detalle del checklist:', response.data);
+      console.log('Status:', response.data.checklist?.status);
       setDetalleHistorial(response.data);
     } catch (error) {
       console.error('Error cargando detalle:', error);
@@ -193,21 +211,29 @@ function SupervisorChecklist() {
 
     setReabriendo(true);
     try {
-      // 1. Reabrir el checklist en el backend
-      await axios.post(
-        'http://localhost:5000/api/supervisor/reopen-checklist',
-        { checklist_id: id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // 1. Reabrir el checklist en el backend (solo si no está ya en progreso)
+      if (detalleHistorial.checklist.status !== 'en_progreso') {
+        await axios.post(
+          `${API_URL}/supervisor/reopen-checklist`,
+          { checklist_id: id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
       // 2. Obtener el checklist actualizado
       const response = await axios.get(
-        `http://localhost:5000/api/supervisor/checklist/${id}`,
+        `${API_URL}/supervisor/checklist/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log('Checklist actualizado:', response.data.checklist);
+      
       // 3. Cargar los datos en el formulario
-      setChecklist({ checklist_id: id, items: response.data.secciones.flatMap(sec => sec.items) });
+      setChecklist({
+        checklist_id: response.data.checklist.id || id,
+        items: response.data.secciones.flatMap(sec => sec.items),
+        ...response.data.checklist
+      });
       
       // Reconstruir respuestas desde las secciones
       const respuestasMap = {};
@@ -224,7 +250,9 @@ function SupervisorChecklist() {
       
       setRespuestas(respuestasMap);
       setObservacionesGenerales(response.data.checklist.observaciones_generales || '');
-      setChecklistStatus('en_edicion');
+      // Si ya estaba en progreso, mantén ese estado; si no, cambia a en_edicion
+      const newStatus = detalleHistorial.checklist.status === 'en_progreso' ? 'en_progreso' : 'en_edicion';
+      setChecklistStatus(newStatus);
       setModoEdicion(true);
       setDetalleHistorial(null);
       setMostrarHistorial(false);
@@ -523,7 +551,7 @@ function SupervisorChecklist() {
             <div className="modal-header">
               <h2>Detalle del Turno — {detalleHistorial.checklist.fecha}</h2>
               <div className="modal-header-actions">
-                {detalleHistorial.checklist.status === 'completado' && (
+                {(detalleHistorial.checklist.status === 'en_progreso' || detalleHistorial.checklist.status === 'completado' || detalleHistorial.checklist.status === 'finalizado') && (
                   <button 
                     className="btn-editar-modal"
                     onClick={() => reabrirParaEdicion(detalleHistorial.checklist.id)}
