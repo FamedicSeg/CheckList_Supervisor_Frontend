@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback} from 'react';
-import { api } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import logo_safemed from '../assets/logo_safemed.jpg';
+import logo2 from '../assets/logo2.png';
 import "../styles/supervisorChecklist.css";
 import { useNavigate } from 'react-router-dom';
 
@@ -16,40 +18,45 @@ function SupervisorChecklist() {
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [detalleHistorial, setDetalleHistorial] = useState(null);
   const [loadingDetalle, setLoadingDetalle] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [reabriendo, setReabriendo] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  
+  useEffect(() => {
+    cargarChecklist();
+    cargarHistorial();
+  }, []);
 
-  const cargarChecklist = useCallback(async () => {
+  const cargarChecklist = async () => {
     try {
-        const response = await api.get(
-            `/supervisor/active-checklist`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setChecklist(response.data);
-        setRespuestas(response.data.respuestas || {});
-        setObservacionesGenerales(response.data.observaciones_generales || '');
-        setChecklistStatus(response.data.status || 'en_progreso');
-        setLoading(false);
+      const response = await axios.get(
+        'http://localhost:5000/api/supervisor/active-checklist',
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setChecklist(response.data);
+      setRespuestas(response.data.respuestas || {});
+      setObservacionesGenerales(response.data.observaciones_generales || '');
+      setChecklistStatus(response.data.status || 'en_progreso');
+      setLoading(false);
     } catch (error) {
-        console.error('Error cargando checklist:', error);
-        if (error.response?.status === 403) {
-            navigate('/login');
-        }
-        setLoading(false);
+      console.error('Error cargando checklist:', error);
+      if (error.response?.status === 403) {
+        navigate('/login');
+      }
+      setLoading(false);
     }
-}, [token, navigate]);
+  };
 
   const guardarProceso = async () => {
     if (!checklist) return;
     setGuardandoProceso(true);
     setMensajeGuardado('');
     try {
-      await api.post(
-        `/supervisor/save-progress`,
+      await axios.post(
+        'http://localhost:5000/api/supervisor/save-progress',
         {
           checklist_id: checklist.checklist_id,
           observaciones_generales: observacionesGenerales
@@ -71,8 +78,8 @@ function SupervisorChecklist() {
     if (!checklist) return;
     
     try {
-      await api.post(
-        `/supervisor/response`,
+      await axios.post(
+        'http://localhost:5000/api/supervisor/response',
         {
           checklist_id: checklist.checklist_id,
           item_id: itemId,
@@ -87,7 +94,8 @@ function SupervisorChecklist() {
   };
 
   const toggleVerificacion = (itemId, targetValue) => {
-    if (checklistStatus === 'completado') return;
+    // Bloquear edición solo si el checklist está completado y NO estamos en modo edición
+    if (checklistStatus === 'completado' && !modoEdicion) return;
     setRespuestas(prev => ({
       ...prev,
       [itemId]: {
@@ -109,21 +117,32 @@ function SupervisorChecklist() {
   };
 
   const finalizarChecklist = async () => {
-    if (!window.confirm('¿Estás seguro de finalizar el turno? No podrás modificar las respuestas después.')) {
+    const confirmMsg = modoEdicion 
+      ? '¿Estás seguro de finalizar la edición? Los cambios se guardarán.' 
+      : '¿Estás seguro de finalizar el turno? No podrás modificar las respuestas después.';
+    
+    if (!window.confirm(confirmMsg)) {
       return;
     }
     
     setFinalizando(true);
     try {
-      await api.post(
-        `/supervisor/finalize-checklist`,
+      const endpoint = modoEdicion 
+        ? 'http://localhost:5000/api/supervisor/finalize-edit'
+        : 'http://localhost:5000/api/supervisor/finalize-checklist';
+      
+      await axios.post(
+        endpoint,
         {
           checklist_id: checklist.checklist_id,
           observaciones_generales: observacionesGenerales
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert('✅ Checklist finalizado correctamente');
+      
+      const msg = modoEdicion ? '✅ Edición finalizada' : '✅ Checklist finalizado correctamente';
+      alert(msg);
+      setModoEdicion(false);
       navigate('/');
     } catch (error) {
       console.error('Error finalizando:', error);
@@ -139,24 +158,26 @@ function SupervisorChecklist() {
     navigate('/login');
   };
 
-  const cargarHistorial = useCallback(async () => {
+  const cargarHistorial = async () => {
     try {
-        const response = await api.get('/supervisor/history', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        setHistorial(response.data);
+      const response = await axios.get(
+        'http://localhost:5000/api/supervisor/history',
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setHistorial(response.data);
     } catch (error) {
-        console.error('Error cargando historial:', error);
+      console.error('Error cargando historial:', error);
     }
-}, [token]); // ← Dependencia
+  };
 
   const verDetalleHistorial = async (id) => {
     setLoadingDetalle(true);
     setDetalleHistorial(null);
     try {
-      const response = await api.get(`/supervisor/checklist/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(
+        `http://localhost:5000/api/supervisor/checklist/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setDetalleHistorial(response.data);
     } catch (error) {
       console.error('Error cargando detalle:', error);
@@ -165,10 +186,58 @@ function SupervisorChecklist() {
     }
   };
 
-  useEffect(() => {
-    cargarChecklist();
-    cargarHistorial();
-  }, [cargarChecklist, cargarHistorial]);
+  const reabrirParaEdicion = async (id) => {
+    if (!window.confirm('¿Deseas reabrir este turno para editar sus registros?')) {
+      return;
+    }
+
+    setReabriendo(true);
+    try {
+      // 1. Reabrir el checklist en el backend
+      await axios.post(
+        'http://localhost:5000/api/supervisor/reopen-checklist',
+        { checklist_id: id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // 2. Obtener el checklist actualizado
+      const response = await axios.get(
+        `http://localhost:5000/api/supervisor/checklist/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // 3. Cargar los datos en el formulario
+      setChecklist({ checklist_id: id, items: response.data.secciones.flatMap(sec => sec.items) });
+      
+      // Reconstruir respuestas desde las secciones
+      const respuestasMap = {};
+      response.data.secciones.forEach(sec => {
+        sec.items.forEach(item => {
+          if (item.verificado !== -1) {
+            respuestasMap[item.item_id] = {
+              verificado: item.verificado,
+              observaciones: item.observaciones || ''
+            };
+          }
+        });
+      });
+      
+      setRespuestas(respuestasMap);
+      setObservacionesGenerales(response.data.checklist.observaciones_generales || '');
+      setChecklistStatus('en_edicion');
+      setModoEdicion(true);
+      setDetalleHistorial(null);
+      setMostrarHistorial(false);
+      setMensajeGuardado('✅ Turno reabierto para edición');
+      setTimeout(() => setMensajeGuardado(''), 3000);
+    } catch (error) {
+      console.error('Error reabriendo checklist:', error);
+      setMensajeGuardado('❌ Error al reabrir el turno');
+      setTimeout(() => setMensajeGuardado(''), 3000);
+    } finally {
+      setReabriendo(false);
+    }
+  };
 
   if (loading) return <div className="loading">Cargando checklist...</div>;
   if (!checklist) return <div className="error">Error al cargar el checklist</div>;
@@ -188,17 +257,24 @@ function SupervisorChecklist() {
     }
   });
 
-  const locked = checklistStatus === 'completado';
+  const locked = checklistStatus === 'completado' && !modoEdicion;
 
   return (
     <div className="supervisor-container">
       <header>
-          <h1 style={{ textAlign: 'center', fontSize: '24px' }}>CHECKLIST - SUPERVISOR DE PRODUCCIÓN</h1>
+        <div className ="logo-left">
+            <img src={logo_safemed} alt="logo" className="logo" />
+        </div>  
+          <h1>CHECKLIST - SUPERVISOR DE PRODUCCIÓN</h1>
+          
+        <div >
+            <img src={logo2} alt="logo" className="logo logo-right" />
+        </div>
       </header>
       <header>
       <div className="header-meta">
             <span>Supervisor: <strong>{user?.nombre}</strong></span><br></br>
-            <span>Fecha: <strong>{checklist?.fecha || new Date().toLocaleDateString()}</strong></span><br></br>
+            <span>Fecha: <strong>{new Date().toLocaleDateString()}</strong></span><br></br>
             <span>
               Turno:
               <select className="turno-select">
@@ -213,7 +289,11 @@ function SupervisorChecklist() {
       <div className="header-info">
         <div className="header-buttons">
         <span className={`status-badge ${locked ? 'status-completado' : ''}`}>
-            {locked ? '🔒 Turno finalizado' : '🟡 Turno en progreso'}
+            {modoEdicion 
+              ? '✏️ Modo de edición activo' 
+              : locked 
+              ? '🔒 Turno finalizado' 
+              : '🟡 Turno en progreso'}
         </span>
         <button onClick={cerrarSesion} className="logout-btn">Cerrar Sesión</button>
       </div>
@@ -351,7 +431,7 @@ function SupervisorChecklist() {
             </div>
           )}
 
-          {locked ? (
+          {locked && !modoEdicion ? (
             <div className="turno-finalizado-msg">
               Este turno ha sido finalizado. No se pueden realizar más cambios.
             </div>
@@ -369,8 +449,24 @@ function SupervisorChecklist() {
                 className="btn-finalize"
                 disabled={finalizando || guardandoProceso}
               >
-                {finalizando ? 'Finalizando...' : 'Finalizar Turno'}
+                {finalizando 
+                  ? (modoEdicion ? 'Finalizando edición...' : 'Finalizando...')
+                  : (modoEdicion ? 'Finalizar edición' : 'Finalizar Turno')}
               </button>
+              {modoEdicion && (
+                <button
+                  onClick={() => {
+                    if (window.confirm('¿Cancelar edición? Se perderán los cambios no guardados.')) {
+                      setModoEdicion(false);
+                      cargarHistorial();
+                    }
+                  }}
+                  className="btn-cancel-edit"
+                  disabled={finalizando || guardandoProceso}
+                >
+                  Cancelar edición
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -426,7 +522,18 @@ function SupervisorChecklist() {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Detalle del Turno — {detalleHistorial.checklist.fecha}</h2>
-              <button className="modal-close" onClick={() => setDetalleHistorial(null)}>✕</button>
+              <div className="modal-header-actions">
+                {detalleHistorial.checklist.status === 'completado' && (
+                  <button 
+                    className="btn-editar-modal"
+                    onClick={() => reabrirParaEdicion(detalleHistorial.checklist.id)}
+                    disabled={reabriendo}
+                  >
+                    {reabriendo ? 'Abriendo...' : '✏️ Editar este turno'}
+                  </button>
+                )}
+                <button className="modal-close" onClick={() => setDetalleHistorial(null)}>✕</button>
+              </div>
             </div>
             <div className="modal-body">
               {detalleHistorial.secciones.map(sec => {

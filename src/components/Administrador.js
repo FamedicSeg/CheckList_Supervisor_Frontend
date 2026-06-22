@@ -194,6 +194,16 @@ export default function AdminUsuarios({ onClose, onUserCreated, onUserUpdated, o
     }
   };
 
+  const handleToggleActivo = async (usuario) => {
+    try {
+      const response = await api.patch(`/usuarios/${usuario.id}/toggle-activo`);
+      setUsuarios(prev => prev.map(u => u.id === usuario.id ? { ...u, activo: response.data.activo } : u));
+      alert(`Usuario ${response.data.activo ? 'activado' : 'desactivado'} correctamente`);
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      alert('Error al cambiar estado del usuario');
+    }
+  };
 
   return (
     <div className="admin-modal-overlay">
