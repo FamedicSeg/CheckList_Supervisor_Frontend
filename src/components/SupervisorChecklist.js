@@ -53,6 +53,13 @@ function SupervisorChecklist() {
 
   const guardarProceso = async () => {
     if (!checklist) return;
+    
+    // No permitir guardar si el turno está finalizado
+    if (locked) {
+      alert('El turno ya está finalizado. No se pueden realizar cambios.');
+      return;
+    }
+    
     setGuardandoProceso(true);
     setMensajeGuardado('');
     try {
@@ -453,13 +460,20 @@ function SupervisorChecklist() {
             disabled={locked}
           />
 
+          {locked && (
+            <div className="turno-finalizado-banner">
+              <h4>✅ Turno Finalizado</h4>
+              <p>Tú ya finalizaste el turno del día. Los campos están bloqueados para proteger la información.</p>
+            </div>
+          )}
+
           {mensajeGuardado && (
             <div className={`mensaje-guardado ${mensajeGuardado.startsWith('❌') ? 'error' : 'success'}`}>
               {mensajeGuardado}
             </div>
           )}
 
-          {locked && !modoEdicion ? (
+          {locked ? (
             <div className="turno-finalizado-msg">
               Este turno ha sido finalizado. No se pueden realizar más cambios.
             </div>
@@ -478,10 +492,10 @@ function SupervisorChecklist() {
                 disabled={finalizando || guardandoProceso}
               >
                 {finalizando 
-                  ? (modoEdicion ? 'Finalizando edición...' : 'Finalizando...')
-                  : (modoEdicion ? 'Finalizar edición' : 'Finalizar Turno')}
+                  ? (checklistStatus === 'en_progreso' ? 'Finalizando...' : 'Finalizando edición...')
+                  : (checklistStatus === 'en_progreso' ? 'Finalizar Turno' : 'Finalizar edición')}
               </button>
-              {modoEdicion && (
+              {checklistStatus === 'en_edicion' && (
                 <button
                   onClick={() => {
                     if (window.confirm('¿Cancelar edición? Se perderán los cambios no guardados.')) {
