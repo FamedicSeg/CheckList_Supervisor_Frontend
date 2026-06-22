@@ -26,11 +26,6 @@ function SupervisorChecklist() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    cargarChecklist();
-    cargarHistorial();
-  }, []);
-
   const cargarChecklist = async () => {
     try {
       const response = await axios.get(
@@ -50,6 +45,23 @@ function SupervisorChecklist() {
       setLoading(false);
     }
   };
+
+  const cargarHistorial = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/supervisor/history`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setHistorial(response.data);
+    } catch (error) {
+      console.error('Error cargando historial:', error);
+    }
+  };
+
+  useEffect(() => {
+    cargarChecklist();
+    cargarHistorial();
+  }, []);
 
   const guardarProceso = async () => {
     if (!checklist) return;
@@ -179,18 +191,6 @@ function SupervisorChecklist() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');
-  };
-
-  const cargarHistorial = async () => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/supervisor/history`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setHistorial(response.data);
-    } catch (error) {
-      console.error('Error cargando historial:', error);
-    }
   };
 
   const verDetalleHistorial = async (id) => {
