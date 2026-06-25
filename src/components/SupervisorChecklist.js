@@ -565,7 +565,7 @@ function SupervisorChecklist() {
             <div className="modal-header">
               <h2>Detalle del Turno — {detalleHistorial.checklist.fecha}</h2>
               <div className="modal-header-actions">
-                {(detalleHistorial.checklist.status === 'en_progreso' || detalleHistorial.checklist.status === 'completado' || detalleHistorial.checklist.status === 'finalizado') && (
+                {(detalleHistorial.checklist.status === 'en_progreso' || detalleHistorial.checklist.status === 'completado' || detalleHistorial.checklist.status === 'finalizado' || detalleHistorial.checklist.status === 'en_edicion') && (
                   <button 
                     className="btn-editar-modal"
                     onClick={() => reabrirParaEdicion(detalleHistorial.checklist.id)}
