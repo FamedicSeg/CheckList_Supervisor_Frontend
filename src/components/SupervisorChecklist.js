@@ -176,7 +176,7 @@ function SupervisorChecklist() {
       const msg = checklistStatus === 'en_progreso' ? '✅ Checklist finalizado correctamente' : '✅ Edición finalizada';
       alert(msg);
       setModoEdicion(false);
-      navigate('/');
+      navigate('/login');
     } catch (error) {
       console.error('Error finalizando:', error);
       console.error('Respuesta del servidor:', error.response?.data);
@@ -500,7 +500,7 @@ function SupervisorChecklist() {
                   onClick={() => {
                     if (window.confirm('¿Cancelar edición? Se perderán los cambios no guardados.')) {
                       setModoEdicion(false);
-                      cargarHistorial();
+                      navigate('/login');
                     }
                   }}
                   className="btn-cancel-edit"
