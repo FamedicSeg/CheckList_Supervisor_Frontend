@@ -218,8 +218,8 @@ function SupervisorChecklist() {
 
     setReabriendo(true);
     try {
-      // 1. Reabrir el checklist en el backend (solo si no está ya en progreso)
-      if (detalleHistorial.checklist.status !== 'en_progreso') {
+      // 1. Reabrir el checklist en el backend (solo si está completado)
+      if (detalleHistorial.checklist.status !== 'en_progreso' && detalleHistorial.checklist.status !== 'en_edicion') {
         await axios.post(
           `${API_URL}/supervisor/reopen-checklist`,
           { checklist_id: id },
