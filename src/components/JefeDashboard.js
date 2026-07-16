@@ -201,12 +201,14 @@ function JefeDashboard() {
     const BORDE = [0, 0, 0]; // Negro
     const TEXTO_OSCURO = [0, 0, 0]; // Negro
 
+    // eslint-disable-next-line no-unused-vars
     const celda = (x, y, w, h, texto, negrita = false, fondo = null) => {
       if(fondo) {
         doc.setFillColor(...fondo);
         doc.rect(x, y, w, h, 'F');
       }
       doc.setDrawColor(...BORDE);
+
       doc.setLineWidth(0.3);
       doc.rect(x, y, w, h, 'S');
       doc.setFontSize(9);
