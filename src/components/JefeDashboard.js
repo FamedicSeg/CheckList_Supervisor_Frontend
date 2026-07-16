@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import logoSafemed from '../assets/logo_safemed.jpg';
-import logo2 from '../assets/logo2.png';
+import logoSafemed from '../assets/safemedic.png';
 import '../styles/indicadores.css';
 
 function JefeDashboard() {
@@ -172,73 +171,130 @@ function JefeDashboard() {
     return '#f44336';
   };
 
-  const getBase64FromUrl = (url) => new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/jpeg'));
-    };
-    img.onerror = () => resolve(null);
-    img.src = url;
-  });
 
   const descargarPDF = async () => {
+
     const cl = selectedChecklist.checklist;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
-    let y = 10; // Reducido el margen superior inicial
+    const mL = 5;
+    const mR = 5;
+    const useW = pageW - mL - mR;
+  
 
-    // ── Cargar imágenes ──
-    const [imgLeft, imgRight] = await Promise.all([
-      getBase64FromUrl(logoSafemed),
-      getBase64FromUrl(logo2)
-    ]);
+    let logoDataUrl = null;
+    try{
+      const resp = await fetch(logoSafemed);
+      const blob = await resp.blob();
+      logoDataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error cargando logo para PDF:', error);
+    }
 
-    // ── Encabezado más compacto ──
-    const headerH = 22; // Reducido de 30 a 22
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pageW, headerH, 'F');
+    // ---- Colores ----
+    const FONDO_PRINCIPAL = [255, 255, 255]; // Blanco
+    const BORDE = [0, 0, 0]; // Negro
+    const TEXTO_OSCURO = [0, 0, 0]; // Negro
 
-    // Logos más pequeños
-    const logoW = 28; // Reducido de 35 a 30
-    const logoH = 16; // Reducido de 17 a 14
-    const logoY = (headerH - logoH) / 2;
-    if (imgLeft)  doc.addImage(imgLeft,  'JPEG', 5, logoY, logoW, logoH);
-    if (imgRight) doc.addImage(imgRight, 'JPEG', pageW - logoW - 5, logoY, logoW, logoH);
+    const celda = (x, y, w, h, texto, negrita = false, fondo = null) => {
+      if(fondo) {
+        doc.setFillColor(...fondo);
+        doc.rect(x, y, w, h, 'F');
+      }
+      doc.setDrawColor(...BORDE);
+      doc.setLineWidth(0.3);
+      doc.rect(x, y, w, h, 'S');
+      doc.setFontSize(9);
+      doc.setTextColor(...TEXTO_OSCURO);
+      doc.setFont('helvetica', negrita ? 'bold' : 'normal');
+      const lineas = doc.splitTextToSize(texto, w - 4);
+      doc.text(lineas, x + 3, y + 6);
+    };
 
-    // Texto centrado más compacto
+    let y = mL;
+
+    // Fila 0: TÍTULO ---------------
+    const tituloH = 25;
+
+    doc.setFillColor(...FONDO_PRINCIPAL);
+    doc.rect(mL, y, useW, tituloH - 4, 'F');
+    doc.setDrawColor(...BORDE);
+    doc.setLineWidth(0.2);
+    doc.rect(mL, y, useW, tituloH - 4, 'S');
+
+    // Imagen de SAFEMED
+    const fotoX = mL + 4;
+    const fotoY = mL + 2;
+    const ancho = 44;
+    const alto = 15;
+
+    if(logoDataUrl) {
+      doc.addImage(logoDataUrl, 'PNG', fotoX, fotoY, ancho, alto);
+    }
+
+    const tituloX = fotoX + ancho + 15;
+    const tituloW = useW - ancho - 80;
+    const tituloY = y; // Cambiado de 0 a y para que el título esté en la parte superior
+    const tituloAlto = alto;
+
+    doc.setDrawColor(...BORDE);
+    doc.setLineWidth(0.2);
+    // LINEA IZQUIERDA
+    doc.line(tituloX - 10, tituloY , tituloX - 10, tituloY + 21);
+    // LINEA DERECHA
+    doc.line(tituloX + tituloW + 10, tituloY , tituloX + tituloW + 10, tituloY + 21);
+
+    // TEXTO DEL TÍTULO
+    doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10); // Reducido de 12 a 10
     doc.setFont('helvetica', 'bold');
-    doc.text('CHECKLIST - SUPERVISOR DE PRODUCCIÓN', pageW / 2, 9, { align: 'center' });
-    doc.setFontSize(7); // Reducido de 8 a 7
-    doc.setFont('helvetica', 'normal');
-    doc.text('Sistema de Registros Digitales', pageW / 2, 15, { align: 'center' });
+    doc.text('CHECKLIST - SUPERVISOR DE PRODUCCIÓN', tituloX + (tituloW / 2), tituloY + (tituloAlto / 2) + 4, { align: 'center' });
 
-    y = headerH + 5; // Reducido el espacio después del encabezado
+    // TEXTO DE LA DERECHA
+    const textoDerecha = [
+      'Código: RG-GPR-38',
+      '',
+      'Fecha: 08-06-2026',
+      '',
+      'Versión: 02'
+    ];
+
+    // Texto dentro de la celda
+    doc.setFontSize(9.2);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+
+    const textX = mL + useW - 45; // Ajustado para que el texto esté más cerca del borde derecho
+    const textY = y + 6;
+    const lineHeight = 3; // Reducido de 5 a 3
+
+    textoDerecha.forEach((linea, index) => {
+      doc.text(linea, textX, textY + index * lineHeight, { align: 'left' });
+    });
+
+    y += tituloH;
 
     // ── Info del turno (más compacta) ──
-    doc.setTextColor(40, 40, 40);
-    doc.setFontSize(8); // Reducido de 9 a 8
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9); // Reducido de 9 a 8
     const fechaInicio = cl.iniciado_en
       ? new Date(cl.iniciado_en).toLocaleString('es-ES', { timeZone: 'America/Guayaquil', day: '2-digit', month: '2-digit', year: 'numeric' })
       : cl.fecha;
     
     doc.setFont('helvetica', 'bold');
-    doc.text('Supervisor:', 14, y);
+    doc.text('Supervisor:', 14, y + 3);
     doc.setFont('helvetica', 'normal');
-    doc.text(cl.supervisor_nombre || '—', 38, y);
+    doc.text(cl.supervisor_nombre || '—', 38, y + 3);
     doc.setFont('helvetica', 'bold');
-    doc.text('Fecha:', pageW / 2, y);
+    doc.text('Fecha:', pageW / 2, y + 3);
     doc.setFont('helvetica', 'normal');
-    doc.text(fechaInicio, pageW / 2 + 12, y);
-    y += 5; // Reducido de 6 a 5
+    doc.text(fechaInicio, pageW / 2 + 12, y + 3);
+    y += 10; // Ajustado para mantener el espaciado correcto
     doc.setFont('helvetica', 'bold');
     doc.text('Turno Nº:', 14, y);
     doc.setFont('helvetica', 'normal');
@@ -276,18 +332,18 @@ function JefeDashboard() {
         head: [
           [{ content: seccion.titulo.toUpperCase(), colSpan: 4, styles: { fillColor: [27, 68, 128], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 8 } }],
           [
-            { content: '#', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 7 } },
-            { content: 'Actividad', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 7 } },
-            { content: 'Verif.', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', halign: 'center', fontSize: 7 } },
-            { content: 'Observaciones / Acciones Correctivas', styles: { fillColor: [189, 215, 238], textColor: [26, 26, 26], fontStyle: 'bold', fontSize: 7 } },
+            { content: '#', styles: { fillColor: [189, 215, 238], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7, halign: 'center' }},
+            { content: 'Actividad', styles: { fillColor: [189, 215, 238], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7, halign: 'center' }},
+            { content: 'Verificación', styles: { fillColor: [189, 215, 238], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center', fontSize: 7 }},
+            { content: 'Observaciones / Acciones Correctivas', styles: { fillColor: [189, 215, 238], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7, halign: 'center' }},
           ]
         ],
         body: rows,
         columnStyles: {
-          0: { cellWidth: 8, halign: 'center', fontSize: 6 }, // Reducido de 10 a 8
-          1: { cellWidth: 80, fontSize: 6 }, // Reducido de 85 a 80
+          0: { cellWidth: 8, halign: 'center', fontSize: 6, textColor: [0, 0, 0] }, // Reducido de 10 a 8
+          1: { cellWidth: 80, fontSize: 6, textColor: [0, 0, 0]  }, // Reducido de 85 a 80
           2: { cellWidth: 18, halign: 'center', fontSize: 6 }, // Reducido de 24 a 18
-          3: { fontSize: 6 }, // Reducido de 7 a 6
+          3: { fontSize: 5.5, halign: 'center', textColor: [0, 0, 0]  }, // Reducido de 7 a 6
         },
         styles: { overflow: 'linebreak', cellPadding: 1.5 }, // Reducido padding de 2 a 1.5
         alternateRowStyles: { fillColor: [245, 250, 255] },
@@ -314,12 +370,12 @@ function JefeDashboard() {
       }
       
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(40, 40, 40);
-      doc.text('Observaciones Generales:', 14, y);
-      y += 4;
-      doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Observaciones Generales:', 14, y+ 3);
+      y += 7;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
       const lines = doc.splitTextToSize(cl.observaciones_generales, pageW - 28);
       doc.text(lines, 14, y);
       y += lines.length * 3.5 + 3; // Reducido el espaciado
