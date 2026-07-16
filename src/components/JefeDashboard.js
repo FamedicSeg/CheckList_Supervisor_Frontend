@@ -8,6 +8,8 @@ import '../styles/indicadores.css';
 
 function JefeDashboard() {
   const [checklists, setChecklists] = useState([]);
+  const [filtroTipoFecha, setFiltroTipoFecha] = useState(() => sessionStorage.getItem("panelFiltroTipoFecha") || "todos");
+  const [filtroFechaSeleccionada, setFiltroFechaSeleccionada] = useState(() => sessionStorage.getItem("panelFiltroFecha") || "");
   const [activeChecklists, setActiveChecklists] = useState([]);
   const [selectedChecklist, setSelectedChecklist] = useState(null);
   const [view, setView] = useState('active');
@@ -30,12 +32,36 @@ function JefeDashboard() {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+  const normalizarFecha = (fechaStr) => {
+    if (!fechaStr) return "";
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) {
+      const [d, m, y] = fechaStr.split("/");
+      return `${y}-${m}-${d}`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(fechaStr)) return fechaStr.substring(0, 10);
+    const date = new Date(fechaStr);
+    if (!isNaN(date)) return date.toISOString().substring(0, 10);
+    return fechaStr;
+  };
+
+  const getWeekRange = (dateStr) => {
+    const date = new Date(dateStr + "T00:00:00");
+    const day = date.getDay();
+    const diffStart = day === 0 ? -6 : 1 - day;
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() + diffStart);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    return { startOfWeek, endOfWeek };
+  };
+  
   useEffect(() => {
     if (view === 'indicadores') {
       cargarIndicadoresSemanales(selectedWeek);
     } else {
       cargarChecklists();
-      const interval = setInterval(cargarChecklists, 10000);
+      const interval = setInterval(cargarChecklists, 50000);
       return () => clearInterval(interval);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,6 +75,14 @@ function JefeDashboard() {
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChecklist?.checklist?.id, selectedChecklist?.checklist?.status]);
+
+  useEffect(() => {
+    sessionStorage.setItem("panelFiltroTipoFecha", filtroTipoFecha);
+  }, [filtroTipoFecha]);
+
+  useEffect (() => {
+    sessionStorage.setItem("panelFiltroFecha", filtroFechaSeleccionada);
+  }, [filtroFechaSeleccionada]);
 
   const cargarIndicadoresSemanales = async (week) => {
     try {
@@ -69,6 +103,21 @@ function JefeDashboard() {
   const handleWeekChange = (e) => {
     setSelectedWeek(e.target.value);
     cargarIndicadoresSemanales(e.target.value);
+  };
+
+  const checklistFiltrados = (r) => {
+    if (filtroTipoFecha !== "todos" && filtroFechaSeleccionada) {
+      const rawFecha = r.iniciado_en || r.fecha;
+      const fechaNorm = normalizarFecha(rawFecha);
+      if (filtroTipoFecha === "dia") {
+        if (fechaNorm !== filtroFechaSeleccionada) return false;
+      } else if (filtroTipoFecha === "semana") {
+        const { startOfWeek, endOfWeek } = getWeekRange(filtroFechaSeleccionada);
+        const fechaRegistro = new Date(fechaNorm + "T00:00:00");
+        if (fechaRegistro < startOfWeek || fechaRegistro > endOfWeek) return false;
+      }
+    }
+    return true;
   };
 
   const cargarChecklists = async () => {
@@ -427,7 +476,7 @@ function JefeDashboard() {
     return new Date(fecha).toLocaleString('es-ES');
   };
 
-  const currentList = view === 'active' ? activeChecklists : checklists;
+  const currentList = (view === 'active' ? activeChecklists : checklists).filter(checklistFiltrados);
 
   return (
     <div className="jefe-container">
@@ -449,8 +498,99 @@ function JefeDashboard() {
         <button className={`tab ${view === 'indicadores' ? 'active' : ''}`} onClick={() => setView('indicadores')}>
           📊 Indicadores
         </button>
-      </div>
+        <div></div>
+        <div></div>
+        <div></div>
 
+      
+
+      {view !== 'indicadores' && <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0}}>
+          {/* ── Fila 2: filtro por fecha (nuevo) ── */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <span style={{ fontSize: "13px", color: "#555", fontWeight: "500" }}>📅 Fecha:</span>
+            <div style={{
+              display: "flex",
+              gap: "4px",
+              backgroundColor: "#f5f5f5",
+              padding: "4px",
+              borderRadius: "8px",
+              border: "1px solid #ddd"
+            }}>
+              {[
+                { valor: "todos",  label: "Todos" },
+                { valor: "dia",    label: "Día" },
+                { valor: "semana", label: "Semana" }
+              ].map(op => (
+                <button
+                  key={op.valor}
+                  onClick={() => { setFiltroTipoFecha(op.valor); setFiltroFechaSeleccionada(""); }}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "6px",
+                    border: "none",
+                    backgroundColor: filtroTipoFecha === op.valor ? "#2563eb" : "#fff",
+                    color: filtroTipoFecha === op.valor ? "#fff" : "#333",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: filtroTipoFecha === op.valor ? "600" : "500",
+                    transition: "all 0.3s ease",
+                    boxShadow: filtroTipoFecha === op.valor ? "0 2px 8px rgba(37,99,235,0.3)" : "none"
+                  }}
+                >
+                  {op.label}
+                </button>
+              ))}
+            </div>
+
+            {filtroTipoFecha !== "todos" && (
+              <input
+                type="date"
+                value={filtroFechaSeleccionada}
+                onChange={(e) => setFiltroFechaSeleccionada(e.target.value)}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #ddd",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  color: "#333",
+                  width: "160px"
+                }}
+              />
+            )}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            {filtroTipoFecha === "semana" && filtroFechaSeleccionada && (() => {
+              const { startOfWeek, endOfWeek } = getWeekRange(filtroFechaSeleccionada);
+              const fmt = (d) => d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
+              return (
+                <span style={{ fontSize: "12px", color: "#2563eb", fontWeight: "500" }}>
+                  {fmt(startOfWeek)} — {fmt(endOfWeek)}
+                </span>
+              );
+            })()}
+
+            {filtroTipoFecha !== "todos" && filtroFechaSeleccionada && (
+              <button
+                onClick={() => setFiltroFechaSeleccionada("")}
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #ddd",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  color: "#666"
+                }}
+              >
+                ✕ Limpiar
+              </button>
+            )}
+          </div>
+          </div>
+        </div>
+        }
+      </div>
+        
       {view === 'indicadores' ? (
         <div className="indicadores-panel">
           {/* ── Cabecera con selector de semana ── */}
